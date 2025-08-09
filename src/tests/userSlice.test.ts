@@ -20,7 +20,7 @@ describe('userSlice reducer', () => {
     password: '123456'
   };
   const mockLoginUser: TLoginData = {
-    email: 'login@mail.com',
+    email: 'test@.test.ru',
     password: '123456'
   };
 
