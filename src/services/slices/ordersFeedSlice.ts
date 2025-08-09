@@ -12,7 +12,7 @@ interface IOrdersFeedState {
   error: string | null;
 }
 
-const initialState: IOrdersFeedState = {
+export const initialState: IOrdersFeedState = {
   ordersFeed: null,
   isLoading: false,
   error: null
