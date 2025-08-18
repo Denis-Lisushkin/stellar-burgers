@@ -43,12 +43,13 @@ jobs:
 📝 Заголовок: $TITLE
 🔗 $URL"
 
-              # Вложенный if для ветки dev
-              if [ "$BASE" = "main" ]; then
+              # Напоминание про git pull для ветки dev
+              if [ "$BASE" = "dev" ]; then
+                PULL_MSG='⚠️ *ВАЖНО! Не забудьте выполнить:*
+`git pull origin dev`'
                 MESSAGE="$MESSAGE
 
-⚠️ *ВАЖНО! Не забудьте выполнить:*
-\`git pull origin dev\`"
+$PULL_MSG"
               fi
             else
               exit 0
