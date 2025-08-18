@@ -18,7 +18,7 @@ jobs:
             echo "$1" | sed -E 's/([_\*\[\]\(\)~`>#+\-=|{}.!])/\\\1/g'
           }
 
-          # Получаем данные PR
+          # Получаем данные PR и экранируем спецсимволы
           HEAD=$(escape_md2 "${{ github.event.pull_request.head.ref }}")
           BASE=$(escape_md2 "${{ github.event.pull_request.base.ref }}")
           TITLE=$(escape_md2 "${{ github.event.pull_request.title }}")
@@ -29,15 +29,16 @@ jobs:
 
           # Формируем сообщение
           if [ "$ACTION" = "opened" ]; then
-            MESSAGE="✅ *Новый Pull Request!*"$'\n'"👤 Автор: $ACTOR"$'\n'"🔀 Из ветки: $HEAD"$'\n'"➡️ В ветку: $BASE"$'\n'"📝 Заголовок: $TITLE"$'\n'"🔗 $URL"
+            MESSAGE="📢 *Новый Pull Request!*\n👤 Автор: $ACTOR\n🔀 Из ветки: $HEAD\n➡️ В ветку: $BASE\n📝 Заголовок: $TITLE\n🔗 $URL"
+
           elif [ "$ACTION" = "closed" ]; then
             if [ "$MERGED" = "true" ]; then
-              MESSAGE="✅ *Pull Request смержен!*"$'\n'"👤 Автор: $ACTOR"$'\n'"🔀 Из ветки: $HEAD"$'\n'"➡️ В ветку: $BASE"$'\n'"📝 Заголовок: $TITLE"$'\n'"🔗 $URL"
+              MESSAGE="✅ *Pull Request смержен!*\n👤 Автор: $ACTOR\n🔀 Из ветки: $HEAD\n➡️ В ветку: $BASE\n📝 Заголовок: $TITLE\n🔗 $URL"
 
               # Напоминание про git pull для ветки dev
-              if [ "$BASE" = "main" ]; then
-                PULL_MSG=$'⚠️ *ВАЖНО! Не забудьте выполнить:*\n`git pull origin dev`'
-                MESSAGE="$MESSAGE"$'\n\n'"$PULL_MSG"
+              if [ "$BASE" = "dev" ]; then
+                PULL_MSG="⚠️ *ВАЖНО! Не забудьте выполнить:*\n\`git pull origin dev\`"
+                MESSAGE="$MESSAGE\n\n$PULL_MSG"
               fi
             else
               exit 0
