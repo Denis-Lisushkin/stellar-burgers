@@ -47,7 +47,7 @@ jobs:
             MESSAGE_LINES+=("🔗 $URL")
 
             # Напоминание про git pull для ветки dev
-            if [ "$BASE" = "dev" ]; then
+            if [ "$BASE" = "main" ]; then
               MESSAGE_LINES+=("")
               MESSAGE_LINES+=("⚠️ *ВАЖНО! Не забудьте выполнить:*")
               MESSAGE_LINES+=("\`git pull origin dev\`")
