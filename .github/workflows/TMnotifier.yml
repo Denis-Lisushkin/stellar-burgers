@@ -25,7 +25,7 @@ jobs:
           ACTOR=$(escape_md2 "${{ github.actor }}")
           URL=$(escape_md2 "${{ github.event.pull_request.html_url }}")
           ACTION="${{ github.event.action }}"
-          MERGED="${{ github.event.pull_request.merged }}"
+          MERGED="${{ github.event.pull_request.merged || false }}"
 
           # Массив строк для сообщения
           MESSAGE_LINES=()
@@ -53,6 +53,7 @@ jobs:
               MESSAGE_LINES+=("\`git pull origin dev\`")
             fi
           else
+            echo "No notification needed for this action"
             exit 0
           fi
 
