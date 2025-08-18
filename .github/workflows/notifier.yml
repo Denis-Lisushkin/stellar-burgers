@@ -29,7 +29,7 @@ jobs:
           if [ "$ACTION" = "opened" ]; then
             MESSAGE="📢 *Новый Pull Request!*
 👤 Автор: $ACTOR
-🔀 Из ветки: *$HEAD*
+🔀 Из ветки: $HEAD
 ➡️ В ветку: *$BASE*
 📝 Заголовок: *$TITLE*
 🔗 $URL"
