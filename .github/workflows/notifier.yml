@@ -29,28 +29,15 @@ jobs:
 
           # Формируем сообщение
           if [ "$ACTION" = "opened" ]; then
-            MESSAGE="📢 *Новый Pull Request!*
-👤 Автор: $ACTOR
-🔀 Из ветки: $HEAD
-➡️ В ветку: $BASE
-📝 Заголовок: $TITLE
-🔗 $URL"
-
+            MESSAGE="✅ *Новый Pull Request!*"$'\n'"👤 Автор: $ACTOR"$'\n'"🔀 Из ветки: $HEAD"$'\n'"➡️ В ветку: $BASE"$'\n'"📝 Заголовок: $TITLE"$'\n'"🔗 $URL"
           elif [ "$ACTION" = "closed" ]; then
             if [ "$MERGED" = "true" ]; then
-              MESSAGE="✅ *Pull Request смержен!*
-👤 Автор: $ACTOR
-🔀 Из ветки: $HEAD
-➡️ В ветку: $BASE
-📝 Заголовок: $TITLE
-🔗 $URL"
+              MESSAGE="✅ *Pull Request смержен!*"$'\n'"👤 Автор: $ACTOR"$'\n'"🔀 Из ветки: $HEAD"$'\n'"➡️ В ветку: $BASE"$'\n'"📝 Заголовок: $TITLE"$'\n'"🔗 $URL"
 
               # Напоминание про git pull для ветки dev
               if [ "$BASE" = "dev" ]; then
-                PULL_MSG="⚠️ *ВАЖНО! Не забудьте выполнить:*\n\`git pull origin dev\`"
-                MESSAGE="$MESSAGE
-
-$PULL_MSG"
+                PULL_MSG=$'⚠️ *ВАЖНО! Не забудьте выполнить:*\n`git pull origin dev`'
+                MESSAGE="$MESSAGE"$'\n\n'"$PULL_MSG"
               fi
             else
               exit 0
