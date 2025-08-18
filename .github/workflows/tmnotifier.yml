@@ -14,11 +14,12 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           # Функция для экранирования MarkdownV2 спецсимволов
+          # Исправлено: - в конце, {} экранируются отдельно
           escape_md2() {
-            echo "$1" | sed -E 's/([_\*\[\]\(\)~`>#+\-=|{}.!])/\\\1/g'
+            echo "$1" | sed -E 's/([_*\[\]\(\)~`>#+=|.!-])/\\\1/g' | sed 's/{/\\{/g; s/}/\\}/g'
           }
 
-          # Экранируем все данные PR
+          # Переменные PR
           HEAD=$(escape_md2 "${{ github.event.pull_request.head.ref }}")
           BASE=$(escape_md2 "${{ github.event.pull_request.base.ref }}")
           TITLE=$(escape_md2 "${{ github.event.pull_request.title }}")
@@ -27,30 +28,46 @@ jobs:
           ACTION="${{ github.event.action }}"
           MERGED="${{ github.event.pull_request.merged }}"
 
-          # Формируем сообщение
+          # Если переменная пустая, делаем false
+          if [ -z "$MERGED" ]; then
+            MERGED=false
+          fi
+
+          # Массив строк для сообщения
+          MESSAGE_LINES=()
+
           if [ "$ACTION" = "opened" ]; then
-            MESSAGE="📢 *Новый Pull Request!*\n👤 Автор: $ACTOR\n🔀 Из ветки: $HEAD\n➡️ В ветку: $BASE\n📝 Заголовок: $TITLE\n🔗 $URL"
+            MESSAGE_LINES+=("📢 *Новый Pull Request!*")
+            MESSAGE_LINES+=("👤 Автор: $ACTOR")
+            MESSAGE_LINES+=("🔀 Из ветки: $HEAD")
+            MESSAGE_LINES+=("➡️ В ветку: $BASE")
+            MESSAGE_LINES+=("📝 Заголовок: $TITLE")
+            MESSAGE_LINES+=("🔗 $URL")
 
-          elif [ "$ACTION" = "closed" ]; then
-            if [ "$MERGED" = "true" ]; then
-              MESSAGE="✅ *Pull Request смержен!*\n👤 Автор: $ACTOR\n🔀 Из ветки: $HEAD\n➡️ В ветку: $BASE\n📝 Заголовок: $TITLE\n🔗 $URL"
+          elif [ "$ACTION" = "closed" ] && [ "$MERGED" = "true" ]; then
+            MESSAGE_LINES+=("✅ *Pull Request смержен!*")
+            MESSAGE_LINES+=("👤 Автор: $ACTOR")
+            MESSAGE_LINES+=("🔀 Из ветки: $HEAD")
+            MESSAGE_LINES+=("➡️ В ветку: $BASE")
+            MESSAGE_LINES+=("📝 Заголовок: $TITLE")
+            MESSAGE_LINES+=("🔗 $URL")
 
-              if [ "$BASE" = "dev" ]; then
-                PULL_MSG="⚠️ *ВАЖНО! Не забудьте выполнить:*\n\`git pull origin dev\`"
-                MESSAGE="$MESSAGE\n\n$PULL_MSG"
-              fi
-            else
-              exit 0
+            # Напоминание про git pull для ветки dev
+            if [ "$BASE" = "dev" ]; then
+              MESSAGE_LINES+=("")
+              MESSAGE_LINES+=("⚠️ *ВАЖНО! Не забудьте выполнить:*")
+              MESSAGE_LINES+=("\`git pull origin dev\`")
             fi
           else
+            echo "No notification needed for this action"
             exit 0
           fi
 
-          # Экранируем весь текст перед отправкой в Telegram
-          MESSAGE_ESCAPED=$(escape_md2 "$MESSAGE")
+          # Объединяем массив в многострочную строку
+          MESSAGE=$(printf "%s\n" "${MESSAGE_LINES[@]}")
 
-          # Отправка сообщения
+          # Отправка в Telegram
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
             -d chat_id="${TELEGRAM_CHAT_ID}" \
             -d parse_mode="MarkdownV2" \
-            -d text="$MESSAGE_ESCAPED"
+            -d text="$MESSAGE"
