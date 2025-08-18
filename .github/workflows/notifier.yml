@@ -12,15 +12,32 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_HEAD: ${{ github.event.pull_request.head.ref }}
+          GITHUB_BASE: ${{ github.event.pull_request.base.ref }}
+          GITHUB_TITLE: ${{ github.event.pull_request.title }}
+          GITHUB_URL: ${{ github.event.pull_request.html_url }}
+          MERGED: ${{ github.event.pull_request.merged }}
+          ACTION: ${{ github.event.action }}
         run: |
-          if [[ "${{ github.event.action }}" == "opened" ]]; then
-            MESSAGE="📢 *Новый Pull Request!*\n\n👤 Автор: ${{ github.actor }}\n🔀 Из ветки: *${{ github.event.pull_request.head.ref }}*\n➡️ В ветку: *${{ github.event.pull_request.base.ref }}*\n📝 Заголовок: *${{ github.event.pull_request.title }}*\n🔗 Ссылка: ${{ github.event.pull_request.html_url }}"
-          elif [[ "${{ github.event.action }}" == "closed" && "${{ github.event.pull_request.merged }}" == "true" ]]; then
-            MESSAGE="✅ *Pull Request смержен!*\n\n👤 Автор: ${{ github.actor }}\n🔀 Из ветки: *${{ github.event.pull_request.head.ref }}*\n➡️ В ветку: *${{ github.event.pull_request.base.ref }}*\n📝 Заголовок: *${{ github.event.pull_request.title }}*\n🔗 Ссылка: ${{ github.event.pull_request.html_url }}"
+          # Функция для экранирования символов MarkdownV2
+          escape_md2() {
+            echo "$1" | sed -E 's/([_\*\[\]\(\)~`>#+\-=|{}.!])/\\\1/g'
+          }
 
-            # добавляем напоминание для ветки dev
-            if [[ "${{ github.event.pull_request.base.ref }}" == "main" ]]; then
-              MESSAGE="$MESSAGE\n\n⚠️ Не забудьте выполнить:\n\`git pull origin main\`"
+          HEAD=$(escape_md2 "$GITHUB_HEAD")
+          BASE=$(escape_md2 "$GITHUB_BASE")
+          TITLE=$(escape_md2 "$GITHUB_TITLE")
+          ACTOR=$(escape_md2 "$GITHUB_ACTOR")
+          URL=$(escape_md2 "$GITHUB_URL")
+
+          if [[ "$ACTION" == "opened" ]]; then
+            MESSAGE="📢 *Новый Pull Request!*\n\n👤 Автор: $ACTOR\n🔀 Из ветки: *$HEAD*\n➡️ В ветку: *$BASE*\n📝 Заголовок: *$TITLE*\n🔗 $URL"
+          elif [[ "$ACTION" == "closed" && "$MERGED" == "true" ]]; then
+            MESSAGE="✅ *Pull Request смержен!*\n\n👤 Автор: $ACTOR\n🔀 Из ветки: *$HEAD*\n➡️ В ветку: *$BASE*\n📝 Заголовок: *$TITLE*\n🔗 $URL"
+
+            if [[ "$BASE" == "main" ]]; then
+              MESSAGE="$MESSAGE\n\n⚠️ *ВАЖНО! Не забудьте выполнить:*\n\`git pull origin main\`"
             fi
           else
             exit 0
@@ -28,5 +45,5 @@ jobs:
 
           curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \
             -d chat_id=${TELEGRAM_CHAT_ID} \
-            -d parse_mode="Markdown" \
+            -d parse_mode="MarkdownV2" \
             -d text="$MESSAGE"
