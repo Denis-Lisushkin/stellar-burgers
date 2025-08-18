@@ -13,6 +13,7 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          # Функция для экранирования MarkdownV2 спецсимволов
           escape_md2() {
             echo "$1" | sed -E 's/([_\*\[\]\(\)~`>#+\-=|{}.!])/\\\1/g'
           }
@@ -40,6 +41,7 @@ jobs:
 📝 Заголовок: *$TITLE*
 🔗 $URL"
 
+            # Напоминание про git pull для ветки dev
             if [ "$BASE" = "dev" ]; then
               MESSAGE="$MESSAGE
 
@@ -50,6 +52,7 @@ jobs:
             exit 0
           fi
 
+          # Отправка в Telegram
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
             -d chat_id="${TELEGRAM_CHAT_ID}" \
             -d parse_mode="MarkdownV2" \
