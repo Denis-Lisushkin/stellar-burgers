@@ -18,6 +18,7 @@ jobs:
             echo "$1" | sed -E 's/([_\*\[\]\(\)~`>#+\-=|{}.!])/\\\1/g'
           }
 
+          # Получаем данные PR
           HEAD=$(escape_md2 "${{ github.event.pull_request.head.ref }}")
           BASE=$(escape_md2 "${{ github.event.pull_request.base.ref }}")
           TITLE=$(escape_md2 "${{ github.event.pull_request.title }}")
@@ -26,6 +27,7 @@ jobs:
           ACTION="${{ github.event.action }}"
           MERGED="${{ github.event.pull_request.merged }}"
 
+          # Формируем сообщение
           if [ "$ACTION" = "opened" ]; then
             MESSAGE="📢 *Новый Pull Request!*
 👤 Автор: $ACTOR
@@ -45,8 +47,7 @@ jobs:
 
               # Напоминание про git pull для ветки dev
               if [ "$BASE" = "dev" ]; then
-                PULL_MSG='⚠️ *ВАЖНО! Не забудьте выполнить:*
-`git pull origin dev`'
+                PULL_MSG="⚠️ *ВАЖНО! Не забудьте выполнить:*\n\`git pull origin dev\`"
                 MESSAGE="$MESSAGE
 
 $PULL_MSG"
