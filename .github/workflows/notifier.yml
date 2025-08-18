@@ -36,7 +36,7 @@ jobs:
               MESSAGE="✅ *Pull Request смержен!*\n👤 Автор: $ACTOR\n🔀 Из ветки: $HEAD\n➡️ В ветку: $BASE\n📝 Заголовок: $TITLE\n🔗 $URL"
 
               # Напоминание про git pull для ветки dev
-              if [ "$BASE" = "dev" ]; then
+              if [ "$BASE" = "main" ]; then
                 PULL_MSG="⚠️ *ВАЖНО! Не забудьте выполнить:*\n\`git pull origin dev\`"
                 MESSAGE="$MESSAGE\n\n$PULL_MSG"
               fi
