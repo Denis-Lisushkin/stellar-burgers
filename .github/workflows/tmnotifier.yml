@@ -27,25 +27,29 @@ jobs:
           ACTION="${{ github.event.action }}"
           MERGED="${{ github.event.pull_request.merged }}"
 
-          # Формируем сообщение в одну строку с переносами \n
+          # Формируем сообщение
           if [ "$ACTION" = "opened" ]; then
             MESSAGE="📢 *Новый Pull Request!*\n👤 Автор: $ACTOR\n🔀 Из ветки: $HEAD\n➡️ В ветку: $BASE\n📝 Заголовок: $TITLE\n🔗 $URL"
 
-          elif [ "$ACTION" = "closed" ] && [ "$MERGED" = "true" ]; then
-            MESSAGE="✅ *Pull Request смержен!*\n👤 Автор: $ACTOR\n🔀 Из ветки: $HEAD\n➡️ В ветку: $BASE\n📝 Заголовок: $TITLE\n🔗 $URL"
+          elif [ "$ACTION" = "closed" ]; then
+            if [ "$MERGED" = "true" ]; then
+              MESSAGE="✅ *Pull Request смержен!*\n👤 Автор: $ACTOR\n🔀 Из ветки: $HEAD\n➡️ В ветку: $BASE\n📝 Заголовок: $TITLE\n🔗 $URL"
 
-            # Напоминание про git pull для ветки dev
-            if [ "$BASE" = "main" ]; then
-              MESSAGE="$MESSAGE\n\n⚠️ *ВАЖНО! Не забудьте выполнить:*\n\`git pull origin dev\`"
+              if [ "$BASE" = "dev" ]; then
+                PULL_MSG="⚠️ *ВАЖНО! Не забудьте выполнить:*\n\`git pull origin dev\`"
+                MESSAGE="$MESSAGE\n\n$PULL_MSG"
+              fi
+            else
+              exit 0
             fi
           else
             exit 0
           fi
 
-          # Экранируем всю строку перед отправкой
+          # Экранируем весь текст перед отправкой в Telegram
           MESSAGE_ESCAPED=$(escape_md2 "$MESSAGE")
 
-          # Отправка сообщения в Telegram
+          # Отправка сообщения
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
             -d chat_id="${TELEGRAM_CHAT_ID}" \
             -d parse_mode="MarkdownV2" \
